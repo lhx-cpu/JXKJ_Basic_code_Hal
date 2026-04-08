@@ -48,7 +48,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t ID;								//定义用于存放ID号的变量
+int16_t AX, AY, AZ, GX, GY, GZ;			//定义用于存放各个数据的变量
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,18 +96,29 @@ int main(void)
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   OLED_Init();
-
+  MPU6050_Init();
   /* USER CODE END 2 */
   
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   OLED_Clear();
-  if (MPU6050_IsReady()) {
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
-  }
-  OLED_ShowChar(5, 5, 'A', 8);
+  /*显示ID号*/
+	// OLED_ShowString(0, 0, "ID:", 8);		//显示静态字符串
+	// ID = MPU6050_GetID();				//获取MPU6050的ID号
+	// OLED_ShowHexNum(10, 0, ID, 2, 8);		//OLED显示ID号
+
+  // OLED_ShowChar(5, 5, 'A', 8);
+  OLED_ShowString(0, 0, "ID:", OLED_8X16);
+  OLED_ShowHexNum(20, 0, MPU6050_GetID(), 3, OLED_8X16);
   while (1)
   {
+    MPU6050_GetData(&AX, &AY, &AZ, &GX, &GY, &GZ);		//获取MPU6050的数据
+		OLED_ShowSignedNum(0, 30, AX, 5, 8);					//OLED显示数据
+		OLED_ShowSignedNum(0, 40, AY, 5, 8);
+		OLED_ShowSignedNum(0, 50, AZ, 5, 8);
+		OLED_ShowSignedNum(50, 30, GX, 5, 8);
+		OLED_ShowSignedNum(50, 40, GY, 5, 8);
+		OLED_ShowSignedNum(50, 50, GZ, 5, 8);
     OLED_Updata();
 
     /* USER CODE END WHILE */
