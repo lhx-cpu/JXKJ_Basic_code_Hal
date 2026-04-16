@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
-#include "stm32f1xx_hal_tim.h"
+#include "stm32f1xx_hal.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -29,6 +29,7 @@
 #include "OLED.h"
 #include "Key.h"
 #include <stdint.h>
+#include "PWM.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -97,9 +98,12 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   MX_I2C1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   OLED_Init();
-  HAL_TIM_Base_Start_IT(&htim1);//以中断的方法驱动定时器1
+  PWM_Init();
+  // HAL_TIM_Base_Start_IT(&htim1);//以中断的方法驱动定时器1
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,26 +111,41 @@ int main(void)
   OLED_ShowString(0, 0, "i:", 6);
 	OLED_ShowString(0, 12, "LED1Mode:", 6);
 	OLED_ShowString(0, 24, "LED2Mode:", 6);
+
   while (1)
   {
-    KeyNum = Key_GetNum();
+    /*这里为按键和LED控制逻辑*/
+    // KeyNum = Key_GetNum();
 
-    if (KeyNum == 1)
-		{
-			LED1Mode ++;
-			LED1Mode %= 5;
-			LED1_SetMode(LED1Mode);
-		}
-		if (KeyNum == 2)
-		{
-			LED2Mode ++;
-			LED2Mode %= 5;
-			LED2_SetMode(LED2Mode);
-		}
+    // if (KeyNum == 1)
+		// {
+		// 	LED1Mode ++;
+		// 	LED1Mode %= 5;
+		// 	LED1_SetMode(LED1Mode);
+		// }
+		// if (KeyNum == 2)
+		// {
+		// 	LED2Mode ++;
+		// 	LED2Mode %= 5;
+		// 	LED2_SetMode(LED2Mode);
+		// }
     
     OLED_ShowNum(90, 0, i ++, 5, 6);
 		OLED_ShowNum(90, 12, LED1Mode, 1, 6);
 		OLED_ShowNum(90, 24, LED2Mode, 1, 6);
+
+    /*这里为PWM控制LED呼吸灯逻辑*/
+    uint16_t j;
+		for (j = 0; j <= 100; j++)
+		{
+			PWM_SetCompare(j);			//依次将定时器的CCR寄存器设置为0~100，PWM占空比逐渐增大，LED逐渐变亮
+			HAL_Delay(10);				//延时10ms
+		}
+		for (j = 0; j <= 100; j++)
+		{
+			PWM_SetCompare(100 - j);	//依次将定时器的CCR寄存器设置为100~0，PWM占空比逐渐减小，LED逐渐变暗
+			HAL_Delay(10);				//延时10ms
+		}
 
     OLED_Updata();
     /* USER CODE END WHILE */
