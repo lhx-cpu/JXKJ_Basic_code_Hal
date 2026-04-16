@@ -5,6 +5,8 @@
 
 
 void PWM_Init(void);
-void PWM_SetCompare(uint32_t Compare);
+void PWM_SetCompare1(uint32_t Compare);
+void PWM_SetCompare2(uint32_t Compare);
+void PWM_SetCompare3(uint32_t Compare);
 
 #endif /* __PWM_H */

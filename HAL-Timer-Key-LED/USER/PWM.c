@@ -11,10 +11,22 @@
 void PWM_Init(void)
 {
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
 }
 
-void PWM_SetCompare(uint32_t Compare)
+void PWM_SetCompare1(uint32_t Compare)
 {
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, Compare);
+} 
+
+void PWM_SetCompare2(uint32_t Compare)
+{
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_2, Compare);
+} 
+
+void PWM_SetCompare3(uint32_t Compare)
+{
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, Compare);
 } 
 
