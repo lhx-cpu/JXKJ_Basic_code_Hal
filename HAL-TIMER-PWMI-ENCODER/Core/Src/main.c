@@ -19,18 +19,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
-#include "stm32f1xx_hal_tim.h"
 #include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "LED.h"
 #include "OLED.h"
-#include "Key.h"
-#include <stdint.h>
 #include "PWM.h"
-#include "Motor.h"
+#include <stdint.h>
+#include "IC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,10 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t LED1Mode;
-uint8_t LED2Mode;
-uint8_t KeyNum;
-uint32_t i;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,84 +91,27 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_TIM1_Init();
+  MX_TIM3_Init();
   MX_I2C1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   OLED_Init();
   PWM_Init();
-  HAL_TIM_Base_Start_IT(&htim1);//以中断的方法驱动定时器1
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  /*这里为PWM驱动直流电机的代码*/
-  // int16_t Speed = 80;
-  // void Motor(void)
-  // {
-  //   if (KeyNum == 1)
-  //   {
-  //     Speed += 20;
-  //     if (Speed > 100)
-  //     {
-  //       Speed = -100;
-  //     }
-  //   }
-    
-  //   if (Speed > 100) Speed = 100;
-  //   if (Speed < -100) Speed = -100;
-    
-  //   Motor_SetSpeed(Speed);
-  // }
-	// OLED_ShowString(0, 36, "CNT:", 6);
-	// OLED_ShowString(0, 48, "Speed:", 6);
-
-  /*这里是Key和LED控制逻辑的显示部分*/
-  OLED_ShowString(0, 0, "i:", 6);
-	OLED_ShowString(0, 12, "LED1Mode:", 6);
-	OLED_ShowString(0, 24, "LED2Mode:", 6);
-
+    OLED_ShowString(0, 0, "pulseWidth:", 6);
+    OLED_ShowString(0, 12, "duty:", 6);
+    // HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+    uint8_t j = 0;
+    OLED_Updata();
   while (1)
   {
-    /*这里为按键和LED控制逻辑*/
-    KeyNum = Key_GetNum();
-
-    if (KeyNum == 1)
-		{
-			LED1Mode ++;
-			LED1Mode %= 5;
-			LED1_SetMode(LED1Mode);
-		}
-		if (KeyNum == 2)
-		{
-			LED2Mode ++;
-			LED2Mode %= 5;
-			LED2_SetMode(LED2Mode);
-		}
-    
-    OLED_ShowNum(90, 0, i++, 5, 6);
-		OLED_ShowNum(90, 12, LED1Mode, 1, 6);
-		OLED_ShowNum(90, 24, LED2Mode, 1, 6);
-
-    /*这里为PWM控制LED呼吸灯逻辑*/
-    uint16_t j;
-		for (j = 0; j <= 100; j++)
-		{
-			PWM_SetCompare1(j);			//依次将定时器的CCR寄存器设置为0~100，PWM占空比逐渐增大，LED逐渐变亮
-			HAL_Delay(10);				//延时10ms
-		}
-		for (j = 0; j <= 100; j++)
-		{
-			PWM_SetCompare1(100 - j);	//依次将定时器的CCR寄存器设置为100~0，PWM占空比逐渐减小，LED逐渐变暗
-			HAL_Delay(10);				//延时10ms
-		}
-
-    /*这里为PWM驱动直流电机的代码*/
-    // Motor();
-    // OLED_ShowNum(90, 36, __HAL_TIM_GET_CLOCKDIVISION(&htim2), 3, 6);
-		// OLED_ShowSignedNum(90, 48, Speed, 3, 6);
-
+    IC_Run();
+    OLED_ShowNum(0, 24, j++, 3, 6);
+    OLED_ShowFloatNum(80, 0, pulseWidth*1e6f, 3,3, 6);
+    OLED_ShowFloatNum(80, 12, duty*1e6f, 3, 3, 6);
     OLED_Updata();
     /* USER CODE END WHILE */
 
@@ -220,14 +157,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  if (htim->Instance == TIM1)
-  {
-    Key_Tick();
-    LED_Tick();
-  }
-}
+
 /* USER CODE END 4 */
 
 /**
