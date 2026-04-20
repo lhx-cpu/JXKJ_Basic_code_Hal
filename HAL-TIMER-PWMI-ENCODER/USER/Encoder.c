@@ -21,7 +21,8 @@ void Encoder_Init(void)
 int16_t Encoder_Get(void)
 {
 	/*使用Temp变量作为中继，目的是返回CNT后将其清零*/
-	int16_t Temp;
+	int16_t Temp;//这里必须为有符号整型，编码器向下计数溢出后变成65535, 
+  // 前面的符号位正好为1变成复数
 	Temp = __HAL_TIM_GET_COUNTER(&htim1);
 	__HAL_TIM_SET_COUNTER(&htim1, 0);
 	return Temp;
