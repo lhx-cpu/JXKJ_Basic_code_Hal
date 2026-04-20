@@ -225,7 +225,9 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 /* USER CODE BEGIN 1 */
 //这是定时器的中断函数，当进入到TIM1的中断时进行判断
 //需要时复制到main.c文件中，或者复制到st32f1xx.it.c文件中。
+
 //不要忘记开启定时器：HAL_TIM_Base_Start_IT(&htim1);//以中断的方法驱动定时器1
+
 // void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 // {
 //   if (htim->Instance == TIM1)

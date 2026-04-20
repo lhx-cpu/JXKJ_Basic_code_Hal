@@ -40,7 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define STATE 0 //0为按键状态，1为LED状态,2为PWM状态 
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,34 +110,39 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   /*这里为PWM驱动直流电机的代码*/
-  // int16_t Speed = 80;
-  // void Motor(void)
-  // {
-  //   if (KeyNum == 1)
-  //   {
-  //     Speed += 20;
-  //     if (Speed > 100)
-  //     {
-  //       Speed = -100;
-  //     }
-  //   }
+  #if STATE == 2
+  int16_t Speed = 80;
+  void Motor(void)
+  {
+    if (KeyNum == 1)
+    {
+      Speed += 20;
+      if (Speed > 100)
+      {
+        Speed = -100;
+      }
+    }
     
-  //   if (Speed > 100) Speed = 100;
-  //   if (Speed < -100) Speed = -100;
+    if (Speed > 100) Speed = 100;
+    if (Speed < -100) Speed = -100;
     
-  //   Motor_SetSpeed(Speed);
-  // }
-	// OLED_ShowString(0, 36, "CNT:", 6);
-	// OLED_ShowString(0, 48, "Speed:", 6);
+    Motor_SetSpeed(Speed);
+  }
+	OLED_ShowString(0, 36, "CNT:", 6);
+	OLED_ShowString(0, 48, "Speed:", 6);
+  #endif
 
   /*这里是Key和LED控制逻辑的显示部分*/
+  #if STATE == 0
   OLED_ShowString(0, 0, "i:", 6);
 	OLED_ShowString(0, 12, "LED1Mode:", 6);
 	OLED_ShowString(0, 24, "LED2Mode:", 6);
+  #endif
 
   while (1)
   {
     /*这里为按键和LED控制逻辑*/
+    #if STATE == 0
     KeyNum = Key_GetNum();
 
     if (KeyNum == 1)
@@ -157,6 +162,9 @@ int main(void)
 		OLED_ShowNum(90, 12, LED1Mode, 1, 6);
 		OLED_ShowNum(90, 24, LED2Mode, 1, 6);
 
+    #endif
+
+    #if STATE == 1
     /*这里为PWM控制LED呼吸灯逻辑*/
     uint16_t j;
 		for (j = 0; j <= 100; j++)
@@ -169,11 +177,14 @@ int main(void)
 			PWM_SetCompare1(100 - j);	//依次将定时器的CCR寄存器设置为100~0，PWM占空比逐渐减小，LED逐渐变暗
 			HAL_Delay(10);				//延时10ms
 		}
+    #endif
 
     /*这里为PWM驱动直流电机的代码*/
-    // Motor();
-    // OLED_ShowNum(90, 36, __HAL_TIM_GET_CLOCKDIVISION(&htim2), 3, 6);
-		// OLED_ShowSignedNum(90, 48, Speed, 3, 6);
+    #if STATE == 2
+    Motor();
+    OLED_ShowNum(90, 36, __HAL_TIM_GET_CLOCKDIVISION(&htim2), 3, 6);
+		OLED_ShowSignedNum(90, 48, Speed, 3, 6);
+    #endif
 
     OLED_Updata();
     /* USER CODE END WHILE */

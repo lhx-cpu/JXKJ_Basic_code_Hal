@@ -1,13 +1,6 @@
 
 /***************************************************************************************
-  * 本程序由江协科技创建并免费开源共享
-  * 你可以任意查看、使用和修改，并应用到自己的项目之中
-  * 程序版权归江协科技所有，任何人或组织不得将其据为己有
-  * 
-  * 程序名称：				NRF24L01无线通信模块驱动程序
-  * 程序创建时间：			2025.6.9
-  * 当前程序版本：			V1.0
-  * 当前版本发布时间：		2024.6.9
+  * 由江科大的NRF24L01模块移植到HAL库中  
   * 
   * 江协科技官方网站：		jiangxiekeji.com
   * 江协科技官方淘宝店：	jiangxiekeji.taobao.com
@@ -20,6 +13,16 @@
 
 #include "NRF24L01.h"
 #include "NRF24L01_Define.h"
+#include "stm32f103xb.h"
+#include "stm32f1xx_hal_gpio.h"
+
+/*宏定义，方便后期修改*/
+#define MyGPIO					GPIOA
+#define NRF24L01_CE_PIN			GPIO_PIN_0
+#define NRF24L01_CSN_PIN		GPIO_PIN_1
+#define NRF24L01_SCK_PIN		GPIO_PIN_2
+#define NRF24L01_MOSI_PIN		GPIO_PIN_3
+#define NRF24L01_MISO_PIN		GPIO_PIN_4
 
 /*全局变量*********************/
 
@@ -58,7 +61,8 @@ uint8_t NRF24L01_RxPacket[NRF24L01_RX_PACKET_WIDTH];				//接收数据包
 void NRF24L01_W_CE(uint8_t BitValue)
 {
 	/*根据BitValue的值，将CE置高电平或者低电平*/
-	GPIO_WriteBit(GPIOA, GPIO_Pin_0, (BitAction)BitValue);
+	// GPIO_WriteBit(GPIOA, GPIO_Pin_0, (BitAction)BitValue);
+	HAL_GPIO_WritePin(MyGPIO, NRF24L01_CE_PIN, (GPIO_PinState)BitValue);
 }
 
 /**
@@ -72,7 +76,8 @@ void NRF24L01_W_CE(uint8_t BitValue)
 void NRF24L01_W_CSN(uint8_t BitValue)
 {
 	/*根据BitValue的值，将CSN置高电平或者低电平*/
-	GPIO_WriteBit(GPIOA, GPIO_Pin_1, (BitAction)BitValue);
+	// GPIO_WriteBit(GPIOA, GPIO_Pin_1, (BitAction)BitValue);
+	HAL_GPIO_WritePin(MyGPIO, NRF24L01_CSN_PIN, (GPIO_PinState)BitValue);
 }
 
 /**
@@ -86,7 +91,8 @@ void NRF24L01_W_CSN(uint8_t BitValue)
 void NRF24L01_W_SCK(uint8_t BitValue)
 {
 	/*根据BitValue的值，将SCK置高电平或者低电平*/
-	GPIO_WriteBit(GPIOA, GPIO_Pin_2, (BitAction)BitValue);
+	// GPIO_WriteBit(GPIOA, GPIO_Pin_2, (BitAction)BitValue);
+	HAL_GPIO_WritePin(MyGPIO, NRF24L01_SCK_PIN, (GPIO_PinState)BitValue);
 }
 
 /**
@@ -100,7 +106,8 @@ void NRF24L01_W_SCK(uint8_t BitValue)
 void NRF24L01_W_MOSI(uint8_t BitValue)
 {
 	/*根据BitValue的值，将MOSI置高电平或者低电平*/
-	GPIO_WriteBit(GPIOA, GPIO_Pin_3, (BitAction)BitValue);
+	// GPIO_WriteBit(GPIOA, GPIO_Pin_3, (BitAction)BitValue);
+	HAL_GPIO_WritePin(MyGPIO, NRF24L01_MOSI_PIN, (GPIO_PinState)BitValue);
 }
 
 /**
@@ -114,7 +121,8 @@ void NRF24L01_W_MOSI(uint8_t BitValue)
 uint8_t NRF24L01_R_MISO(void)
 {
 	/*取MISO引脚的高低电平并返回*/
-	return GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4);
+	// return GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_4);
+	return HAL_GPIO_ReadPin(MyGPIO, NRF24L01_MISO_PIN);
 }
 
 /**
@@ -129,23 +137,7 @@ uint8_t NRF24L01_R_MISO(void)
   *           用户需要将CSN、CE、MISO、SCK引脚初始化为推挽输出模式，MISO引脚初始化为上拉输入模式
   */
 void NRF24L01_GPIO_Init(void)
-{
-	/*开启GPIO时钟*/
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-	
-	/*将CE、CSN、SCK、MOSI引脚初始化为推挽输出模式*/
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
-	/*将MISO引脚初始化为上拉输入模式*/
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
+{	
 	/*置引脚初始化后的默认电平*/
 	NRF24L01_W_CE(0);		//CE默认为0，退出收发模式
 	NRF24L01_W_CSN(1);		//CSN默认为1，不选中从机
@@ -698,5 +690,4 @@ void NRF24L01_UpdateRxAddress(void)
 /*********************功能函数*/
 
 
-/*****************江协科技|版权所有****************/
-/*****************jiangxiekeji.com*****************/
+/*****************江协科技牛逼****************/
