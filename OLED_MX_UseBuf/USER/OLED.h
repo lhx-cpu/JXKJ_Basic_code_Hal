@@ -38,11 +38,26 @@ void OLED_ReverseArea(int16_t X, int16_t Y, uint8_t Width, uint8_t Height);
 void OLED_ShowChar(int16_t X, int16_t Y, char Char, uint8_t FontSize);
 void OLED_ShowString(int16_t X, int16_t Y, char *String, uint8_t FontSize);
 void OLED_ShowChinese(uint8_t X, uint8_t Y, char *Chinese);   //逻辑为把汉字拆分为一个个独立的汉字。
-void OLED_ShowNum(int16_t X, int16_t Y, uint32_t Number, uint8_t Length, uint8_t FontSize);
+/*底层数字显示函数*/
+void OLED_ShowNum_U(int16_t X, int16_t Y, uint32_t Number, uint8_t Length, uint8_t FontSize);
 void OLED_ShowSignedNum(int16_t X, int16_t Y, int32_t Number, uint8_t Length, uint8_t FontSize);
 void OLED_ShowHexNum(int16_t X, int16_t Y, uint32_t Number, uint8_t Length, uint8_t FontSize);
 void OLED_ShowBinNum(int16_t X, int16_t Y, uint32_t Number, uint8_t Length, uint8_t FontSize);
 void OLED_ShowFloatNum(int16_t X, int16_t Y, double Number, uint8_t IntLength, uint8_t FraLength, uint8_t FontSize);
+
+/*==========================================================================
+ * OLED_ShowNum 类型分发宏 (C11 _Generic)
+ * 根据 Number 参数类型自动选择底层函数:
+ *   uint32_t → OLED_ShowNum_U    (无符号十进制)
+ *   int32_t  → OLED_ShowSignedNum(有符号十进制)
+ * 调用方式: OLED_ShowNum(X, Y, Number, Length, FontSize)
+ * 如需十六进制/二进制，请直接调用 OLED_ShowHexNum / OLED_ShowBinNum
+ *==========================================================================*/
+#define OLED_ShowNum(X, Y, Number, Length, FontSize) \
+    _Generic((Number), \
+        uint32_t: OLED_ShowNum_U, \
+        int32_t:  OLED_ShowSignedNum \
+    )(X, Y, Number, Length, FontSize)
 void OLED_ShowImage(int16_t X, int16_t Y, uint8_t Width, uint8_t Height, const uint8_t *Image);
 void OLED_Printf(int16_t X, int16_t Y, uint8_t FontSize, char *format, ...);
 
